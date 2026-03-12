@@ -21,7 +21,7 @@ public class PollutionData
         // initialise instance variables
         
         years = new int[]{2018, 2019, 2020, 2021, 2022, 2023};
-        pollutants = new String[]{"NO2", "pm10", "pm25"};
+        pollutants = new String[]{"NO2", "pm10", "pm2.5"};
         
         completeData = new HashMap<>();
         
@@ -41,7 +41,23 @@ public class PollutionData
             Map<Integer, DataSet> pollutantsByYear = new HashMap<>();
             
             for (int year:years){
-                String filePath = "UKAirPollutionData/" +pollutant+ "/map"+ pollutant.toLowerCase()+year+".csv";
+                
+                String filePath;
+                
+                if (pollutant.equals("NO2")){
+                    filePath = "UKAirPollutionData/" +pollutant+ "/map"+ pollutant.toLowerCase()+year+  ".csv";
+                }
+                else{
+                    
+                    if (pollutant.equals("pm2.5")){
+                        filePath = "UKAirPollutionData/" +pollutant+ "/map"+ "pm25" +year+"g"+".csv";
+                        
+                    }
+                    else{
+                        filePath = "UKAirPollutionData/" +pollutant+ "/map"+ pollutant.toLowerCase()+year+"g"+".csv";
+                    }
+                }
+                
                 
                 DataSet dataset = loader.loadDataFile(filePath);
                 
@@ -64,4 +80,11 @@ public class PollutionData
         return pollutants;
     }
     
+    public DataSet getDataSet(String pollutant, int year) {
+        Map<Integer, DataSet> yearMap = completeData.get(pollutant);
+        if (yearMap != null) {
+            return yearMap.get(year);
+        }
+        return null;
+    }
 }

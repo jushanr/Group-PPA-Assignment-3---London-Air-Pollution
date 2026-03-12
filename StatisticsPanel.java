@@ -1,5 +1,3 @@
-
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -12,6 +10,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import java.util.List;
 
 /**
  * Write a description of JavaFX class StatisticsPanel here.
@@ -21,55 +23,132 @@ import javafx.scene.control.TextArea;
  */
 public class StatisticsPanel extends VBox
 {
-    private ComboBox<String> pollutantSelector;  // Your own controls
+    private ComboBox<String> pollutantSelector;  
     private ComboBox<Integer> yearSelector;
     private TextArea resultArea;
-    private PollutionData data;
+    private PollutionData pollutionData;
+    private LineChart<Number, Number> lineChart;
+    private int[] years;
+    private String[] pollutants;
     
     public StatisticsPanel() {
-        data = new PollutionData();
+        pollutionData = new PollutionData();
         
         Label title = new Label("Pollution Statistics");
         
         // Get years and pollutants from the data object
-        int[] years = data.getYears();
-        String[] pollutants = data.getPollutants();
+        years = pollutionData.getYears();
+        pollutants = pollutionData.getPollutants();
         
-        // Use them everywhere
         pollutantSelector = new ComboBox<>();
-        for (String p : data.getPollutants()) {
-            pollutantSelector.getItems().add(p);
+        for (String pollutant : pollutionData.getPollutants()) {
+            pollutantSelector.getItems().add(pollutant);
         }
-        pollutantSelector.setValue(data.getPollutants()[0]);
+        pollutantSelector.setValue(pollutionData.getPollutants()[0]);
         
         yearSelector = new ComboBox<>();
-        for (int y : data.getYears()) {
-            yearSelector.getItems().add(y);
+        for (int year : pollutionData.getYears()) {
+            yearSelector.getItems().add(year);
         }
-        yearSelector.setValue(data.getYears()[0]);
+        yearSelector.setValue(pollutionData.getYears()[0]);
         
         Button avgButton = new Button("Show Average");
-        //avgButton.setOnAction(this::showAverage);
+        avgButton.setOnAction(this::showAverage);
         
         Button highestButton = new Button("Show Highest");
         Button trendButton = new Button("Show Trend");
+        trendButton.setOnAction(this::showTrend);
         
-        // Result area
+        
         resultArea = new TextArea();
         resultArea.setPrefHeight(150);
         resultArea.setEditable(false);
+        
+        
+        int minYear = years[0] - 1;      
+        int maxYear = years[years.length - 1] + 1;
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
+        
+        xAxis.setLabel("Year");
+        xAxis.setAutoRanging(false);
+        xAxis.setLowerBound(minYear);
+        xAxis.setUpperBound(maxYear);
+        xAxis.setTickUnit(1);
+        
+        yAxis.setLabel("Concentration");
+        yAxis.setAutoRanging(true);
+        
+        lineChart = new LineChart<>(xAxis, yAxis);
+        lineChart.setPrefHeight(250);
+        lineChart.setVisible(false);
         
         getChildren().addAll(
             title,
             new Label("Select Pollutant:"), pollutantSelector,
             new Label("Select Year:"), yearSelector,
-            avgButton, highestButton, trendButton
+            avgButton, highestButton, trendButton,
+            resultArea, lineChart
         );
+        
+        
         
 
         
     }
     
+    private void showAverage(ActionEvent event) {
+        String pollutant = pollutantSelector.getValue();
+        int year = yearSelector.getValue();
+        
+        DataSet data = pollutionData.getDataSet(pollutant,year);
+        if (data ==null){
+            resultArea.setText("No data available for " + pollutant + " " + year);
+            lineChart.setVisible(false);
+            resultArea.setVisible(true);
+            return;
+        }
+        
+        double average = calculateAverage(data.getData());
+        String units = data.getUnits();
+        
+        resultArea.setText(String.format(
+            "Average %s in %d: %.2f %s",
+            pollutant, year, average, units
+        ));
+        
+        lineChart.setVisible(false);
+        resultArea.setVisible(true);
     
+    }
+    
+    private double calculateAverage(List<DataPoint> points) {
+        if (points.isEmpty()) return 0;
+        double sum = 0;
+        for (DataPoint point : points) {
+            sum += point.value();
+        }
+        return sum / points.size();
+    }
+    
+    private void showTrend(ActionEvent event) {
+        String pollutant = pollutantSelector.getValue();
+        
+        lineChart.getData().clear();
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        series.setName(pollutant + " Trend");
+        
+        for (int year : years) {
+            DataSet data = pollutionData.getDataSet(pollutant, year);
+            if (data != null) {
+                double average = calculateAverage(data.getData());
+                series.getData().add(new XYChart.Data<>(year, average));
+            }
+        }
+        
+        lineChart.getData().add(series);
+        resultArea.setVisible(false);
+        lineChart.setVisible(true);
+    }
     
 }
