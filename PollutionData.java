@@ -10,6 +10,8 @@ public class PollutionData
 {
     // instance variables - replace the example below with your own
     private Map<String, Map<Integer, DataSet> > completeData;
+    private int[] years;
+    private String[] pollutants;
 
     /**
      * Constructor for objects of class PollutionData
@@ -17,7 +19,12 @@ public class PollutionData
     public PollutionData()
     {
         // initialise instance variables
+        
+        years = new int[]{2018, 2019, 2020, 2021, 2022, 2023};
+        pollutants = new String[]{"NO2", "pm10", "pm25"};
+        
         completeData = new HashMap<>();
+        
         loadAllFiles();
     }
 
@@ -29,8 +36,6 @@ public class PollutionData
     {
         DataLoader loader = new DataLoader();
         
-        int[] years = {2018, 2019, 2020, 2021, 2022, 2023};
-        String[] pollutants = {"NO2", "pm10", "pm25"};
         
         for (String pollutant:pollutants){
             Map<Integer, DataSet> pollutantsByYear = new HashMap<>();
@@ -50,4 +55,13 @@ public class PollutionData
         }
         
     }
+    
+    public int[] getYears(){
+        return years;
+    }
+    
+    public String[] getPollutants(){
+        return pollutants;
+    }
+    
 }
