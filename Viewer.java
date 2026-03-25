@@ -49,7 +49,7 @@ public class Viewer extends Application
         // STATS TAB
         Tab statsTab = new Tab("Statistics");
         // stats tab will show averages, trends and whatever oteher data necessary
-        statsTab.setContent(new StatsPanel().getRoot());
+        statsTab.setContent(new StatisticsPanel().getRoot());
         
         // DETAILS TAB
         Tab detailsTab = new Tab("Details");

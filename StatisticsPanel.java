@@ -23,6 +23,7 @@ import java.util.List;
  */
 public class StatisticsPanel extends VBox
 {
+    private VBox root;
     private ComboBox<String> pollutantSelector;  
     private ComboBox<Integer> yearSelector;
     private TextArea resultArea;
@@ -151,4 +152,12 @@ public class StatisticsPanel extends VBox
         lineChart.setVisible(true);
     }
     
+    
+        /**
+     * COMMENT
+     */
+    public VBox getRoot()
+    {
+        return root;
+    }
 }
